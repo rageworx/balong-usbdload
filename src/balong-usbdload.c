@@ -1,15 +1,15 @@
 // The usbloader.bin loader via the emergency port for Balong V7R2 modems.
 //
+#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 
 #ifndef _WIN32
-    #include <stdlib.h>
-    #include <string.h>
     #include <sys/types.h>
     #include <fcntl.h>
     #include <termios.h>
-    #include <unistd.h>
     #include <arpa/inet.h>
 #else
     #include <windows.h>
@@ -27,7 +27,7 @@
     static HANDLE hSerial;
 #endif /// of !_WIN32
 
-FILE* ldr = NULL;
+static FILE* ldr = NULL;
 
 #define APP_VERSION_S    "2.20.3.12"
 
@@ -100,7 +100,7 @@ void csum(unsigned char* buf, int len)
 //*************************************************
 //* Sending a command package to the modem
 //*************************************************
-int sendcmd(unsigned char* cmdbuf, int len) 
+unsigned sendcmd( unsigned char* cmdbuf, size_t len ) 
 {
     unsigned char replybuf[1024] = {0};
     unsigned int  replylen;
@@ -127,19 +127,19 @@ int sendcmd(unsigned char* cmdbuf, int len)
     while (replylen == 0 && GetTickCount() - t < 1000);
 #endif /// of _WIN32
     if (replylen == 0) 
-        return 0;
+        return 0; /// false
     
     if (replybuf[0] == 0xaa) 
-        return 1;
+        return 1; /// true
 
-    return 0;
+    return 0; /// false
 }
 
 //*************************************
 // Opening and Configuring a Serial Port
 //*************************************
 
-int open_port(char* devname) 
+unsigned open_port(char* devname) 
 {
 #ifndef _WIN32
     int i,dflag=1;
@@ -244,7 +244,7 @@ static GUID GUID_DEVCLASS_PORTS = { 0x4D36E978,
                                     0xBF, 0xC1, 0x08, 0x00, 
                                     0x2B, 0xE1, 0x03, 0x18 };
 
-static int find_port(int* port_no, char* port_name)
+static unsigned find_port(int* port_no, char* port_name)
 {
     HDEVINFO    device_info_set;
     DWORD       member_index = 0;
@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
                 i=atoi(optarg);
                 if (i>41) 
                 {
-                    printf("\nSection #%i does not existed.\n",i);
+                    printf("\n ERROR - Section #%i does not existed.\n",i);
                     return -1;
                 }
                 fileflag[i]=1;
@@ -474,7 +474,6 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
     printf( "(c)2016 rust3028, windows build\n" );
 #endif
-
 
     if ( optind >= argc ) 
     {
@@ -651,7 +650,7 @@ int main(int argc, char* argv[])
 
             if (res != 0)
             {
-                printf( "\n\n * Removed flash_eraseall procedure on offset 0x%08x", 
+                printf( "\n * Removed flash_eraseall procedure on offset 0x%08x", 
                         blk[bl].offset + res );
             }
             else 
@@ -689,7 +688,6 @@ int main(int argc, char* argv[])
         return -1;
     }  
 
-
     // Check port is accessable.
     c=0;
 #ifndef _WIN32
@@ -711,6 +709,7 @@ int main(int argc, char* argv[])
     // main load loop - load all blocks found in the header
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 
+    fflush( stdout );
     printf( "\n\n"
             "Component    Address  Size     %%downloading\n"
             "-------------------------------------------\n" );
@@ -747,7 +746,7 @@ int main(int argc, char* argv[])
                     blk[bl].adr,
                     blk[bl].size,
                     (adr+datasize)*100/blk[bl].size ); 
-          
+            fflush( stdout );
             // preparing a data package
             cmddata[1]=pktcount;
             cmddata[2]=(~pktcount)&0xff;
@@ -759,8 +758,15 @@ int main(int argc, char* argv[])
             {
                 printf( "\n ERROR - Modem rejected data packet.\n" );
                 return -1;
-            }  
-        }
+            }
+
+	    // little wait for safety transfer.
+#ifndef _WIN32
+	    usleep( 25000 );
+#else
+	    Sleep( 25 );
+#endif /// of _WIN32
+	}
 
         free(blk[bl].pbuf);
 
