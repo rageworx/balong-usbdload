@@ -29,6 +29,8 @@
 
 FILE* ldr = NULL;
 
+#define APP_VERSION_S    "2.20.3.12"
+
 //*************************************************
 //* HEX-dump memory area                          *
 //*************************************************
@@ -398,23 +400,24 @@ int main(int argc, char* argv[])
         switch (opt) 
         {
             case 'h': 
-            printf( "\nThe utility is designed for emergency USB boot of devices on the Balong V7 chip.\n\n" );
+            printf( "The utility is designed for emergency USB boot of devices on the Balong V7 chip.\n\n" );
             printf( "  usage : %s [options] <filename to upload>\n\n",
                     argv0 );
             printf( "options:\n\n" );
 #ifndef _WIN32
-            printf( "  -p <tty> : serial port for communication with the loader (default = /dev/ttyUSB0)\n" );
+            printf( "    -p <tty> : serial port for communication with the loader (default = /dev/ttyUSB0)\n" );
 #else
-            printf( "  -p (n)   : serial port number to communicate with the bootloader\n" );
-            printf( "             for example, -p8 meaning COM8\n" );
-            printf( "     ** if -p switch is not specified, port autodetection is performed\n" );
+            printf( "    -p (n)   : serial port number to communicate with the bootloader\n" );
+            printf( "               for example, -p8 meaning COM8\n" );
+            printf( "               if -p switch is not specified, port autodetection is performed\n" );
 #endif /// of !_WIN32
-            printf( "  -f       : load usbloader only to fastboot (without running Linux)\n" );
-            printf( "  -b       : imilar to -f, additionally disable bad block check аon erase.\n" );
-            printf( "  -t <file>: take the partition table from the specified file\n" );
-            printf( "  -m       : how the bootloader partition table and exit\n" );
-            printf( "  -s (n)   : set a file flag for partition n (the key can be specified several times)\n" );
-            printf( "  -c       : do not automatically patch erase sections\n" );
+            printf( "    -f       : load usbloader only to fastboot (without running Linux)\n" );
+            printf( "    -b       : Similar to -f, but disable bad block check when erase.\n" );
+            printf( "    -t <file>: take the partition table from the specified file\n" );
+            printf( "    -m       : show bootloader partition table map and exit\n" );
+            printf( "    -s (n)   : set a file flag for partition by n.\n" );
+	    printf( "               it should be specified several times.\n" );
+            printf( "    -c       : do not automatically patch erase sections\n" );
                 return 0;
 
             case 'p':
@@ -459,14 +462,15 @@ int main(int argc, char* argv[])
         }
     }  /// of while ((opt = .... ) 
 
-    printf( "%s: Balong Chipset Emergency USB Bootloader v2.20 ",
-            argv0 );
+    printf( "%s: Balong Chipset Emergency USB Writer ver %s ",
+            argv0,
+	    APP_VERSION_S );
 #ifdef _WIN32
-        printf( "[windows]\n" );
+    printf( "[windows]\n" );
 #else
-        printf( "[linux]\n" );
+    printf( "[linux]\n" );
 #endif
-    printf( "(c)2015 forth32, (c)2020 rageworx\n" );
+    printf( "(c)2015 forth32, (c)2020 rageworx.info\n" );
 #ifdef _WIN32
     printf( "(c)2016 rust3028, windows build\n" );
 #endif
