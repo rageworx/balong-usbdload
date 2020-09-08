@@ -405,7 +405,7 @@ int main(int argc, char* argv[])
 #ifndef _WIN32
             printf( "  -p <tty> : serial port for communication with the loader (default = /dev/ttyUSB0)\n" );
 #else
-            printf( "  -p (n)     : serial port number to communicate with the bootloader\n" );
+            printf( "  -p (n)   : serial port number to communicate with the bootloader\n" );
             printf( "             for example, -p8 meaning COM8\n" );
             printf( "     ** if -p switch is not specified, port autodetection is performed\n" );
 #endif /// of !_WIN32
@@ -462,9 +462,9 @@ int main(int argc, char* argv[])
     printf( "%s: Balong Chipset Emergency USB Bootloader v2.20 ",
             argv0 );
 #ifdef _WIN32
-        printf( "[windows build]\n" );
+        printf( "[windows]\n" );
 #else
-        printf( "[linux build]\n" );
+        printf( "[linux]\n" );
 #endif
     printf( "(c)2015 forth32, (c)2020 rageworx\n" );
 #ifdef _WIN32

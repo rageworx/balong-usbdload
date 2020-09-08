@@ -17,106 +17,126 @@
   
 //############################################################################################################3
 
-void main(int argc, char* argv[]) {
-  
-  
-int opt;  
-int mflag=0;
-char ptfile[100];
-int rflag=0,xflag=0;
+int main(int argc, char* argv[]) 
+{
+    int     opt;  
+    int     mflag = 0;
+    char    ptfile[100] = {0};
+    int     rflag = 0;
+    int     xflag = 0;
 
-uint32_t ptaddr;
-struct ptable_t ptable;
+    uint32_t ptaddr = 0;
+    struct ptable_t ptable;
 
-FILE* ldr;
-FILE* out;
-FILE* in;
+    FILE* ldr = NULL;
+    FILE* out = NULL;
+    FILE* in  = NULL;
 
-while ((opt = getopt(argc, argv, "mr:hx")) != -1) {
-  switch (opt) {
-   case 'h': 
+    while ((opt = getopt(argc, argv, "mr:hx")) != -1) 
+    {
+        switch (opt) 
+        {
+            case 'h': 
+         
+                printf( "\n Utility for replacing the partition table in bootloaders usbloader\n\n" );
+                printf( "    %s [option] <usbloader file name>\n\n", 
+                        argv[0] );
+                printf( "options :\n\n" );
+                printf( "  -m  : show current partition map in usbloader\n" );
+                printf( "  -x  : extract current map to ptable.bin file\n" );
+                printf( "  -r <file> : replace the partition map with the map from the given file\n" );
+                return 0;
+            
+           case 'm':
+                mflag=1;
+                break;
+            
+           case 'x':
+                xflag=1;
+                break;
+            
+           case 'r':
+                rflag=1;
+                strcpy (ptfile,optarg);
+                break;
+             
+           case '?':
+           case ':':  
+                return 0;
+        }  
+    }  /// of while( opt ... )
+
+    if (optind>=argc) 
+    {
+        printf("\n ERROR - Loader file name not specified.\n");
+        return -1;
+    }  
+
+    ldr=fopen(argv[optind],"r+b");
+
+    if (ldr == 0) 
+    {
+        printf("\n ERROR - File %s not open.\n", argv[optind]);
+        return -1;
+    }
      
-printf("\n Утилита для замены таблицы разделов в загрузчиках usbloader\
-\n\n\
-%s [ключи] <имя файла usbloader>\n\n\
- Допустимы следующие ключи:\n\n\
--m       - показать текущую карту разделов в usbloader\n\
--x       - извлечь текущую карту в файл ptable.bin\n\
--r <file>- заменить карту разделов на карту из указанного файла\n\
-\n",argv[0]);
-    return;
-    
-   case 'm':
-    mflag=1;
-    break;
-    
-   case 'x':
-    xflag=1;
-    break;
-    
-   case 'r':
-     rflag=1;
-     strcpy (ptfile,optarg);
-     break;
-     
-   case '?':
-   case ':':  
-     return;
-  
-  }  
-}  
-if (optind>=argc) {
-    printf("\n - Не указано имя файла загрузчика\n");
-    return;
-}  
+    // Looking for the partition table in the bootloader file
 
-ldr=fopen(argv[optind],"r+b");
-if (ldr == 0) {
-  printf("\n Ошибка открытия файла %s\n",argv[optind]);
-  return;
-}
+    ptaddr=find_ptable(ldr);
 
- 
-// Ищем таблицу разделов в файле загрузчика  
+    if (ptaddr == 0) 
+    {
+        printf("\n ERROR - Partition table in bootloader not found.\n");
+        fclose( ldr );
+        return -1;
+    }
 
-ptaddr=find_ptable(ldr);
-if (ptaddr == 0) {
-  printf("\n Таблица разделов в загрузчике не найдена\n");
-  return ;
-}
-// читаем текущую таблицу
-fread(&ptable,sizeof(ptable),1,ldr);
+    // read the current table
+    fread(&ptable,sizeof(ptable),1,ldr);
 
-if (xflag) {
-   out=fopen("ptable.bin","wb");
-   fwrite(&ptable,sizeof(ptable),1,out);
-   fclose(out);
-}   
+    if (xflag) 
+    {
+        out=fopen("ptable.bin","wb");
+        fwrite(&ptable,sizeof(ptable),1,out);
+        fclose(out);
+    }   
 
-if (mflag) {
-  show_map(ptable);
-}
+    if (mflag) 
+    {
+        show_map(ptable);
+    }
 
-if (mflag | xflag) return;
+    if (mflag | xflag) 
+    {
+        fclose( ldr );
+        return -1;
+    }
+      
+    if (rflag) 
+    { 
+        in=fopen(ptfile,"rb");
 
-  
-if (rflag) { 
-  in=fopen(ptfile,"rb");
-  if (in == 0) {
-    printf("\n Ошибка открытия файла %s",ptfile);
-    return;
-  }
-  fread(&ptable,sizeof(ptable),1,in);
-  fclose(in);
-  
-  // проверяем файл
-  if (memcmp(ptable.head,headmagic,16) != 0) {
-    printf("\n Входной файл не является таблицей разделов\n");
-    return;
-  }
-  fseek(ldr,ptaddr,SEEK_SET);
-  fwrite(&ptable,sizeof(ptable),1,ldr);
-  fclose(ldr);
-  
-}  
+        if (in == 0) 
+        {
+            printf("\n ERROR - File %s cannot writen.\n",ptfile);
+            fclose( ldr );
+            return -1;
+        }
+
+        fread(&ptable,sizeof(ptable),1,in);
+        fclose(in);
+          
+        if (memcmp(ptable.head,headmagic,16) != 0) 
+        {
+            printf("\n ERROR - Input file is not a partition table.\n");
+            fclose( ldr );
+            return -1;
+        }
+
+        fseek(ldr,ptaddr,SEEK_SET);
+        fwrite(&ptable,sizeof(ptable),1,ldr);
+        fclose(ldr);
+    }  
+
+    return 0;
 }
