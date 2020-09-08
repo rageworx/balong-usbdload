@@ -1,0 +1,52 @@
+# Make file for linux.
+
+CC = gcc
+CFLAGS = -O2 -g -Wno-unused-result
+LFALGS =
+
+# Target config --
+TARGET_DIR = bin
+T_BUSBDL = bin/balong-usbdload
+T_PTINJR = bin/ptable-injector
+T_LDRPAT = bin/loader-patch
+T_PTBLST = bin/ptable-list
+
+.PHONY: all clean 
+
+all: prepare $(T_BUSBDL) $(T_PTINJR) $(T_LDRPAT) $(T_PTBLST)
+
+#.c.o:
+#	$(CC) -o $@ $(LIBS) $^ qcio.o
+
+prepare:
+	@mkdir -p obj
+	@mkdir -p bin
+
+clean:
+	@rm -rf bin/*
+	@rm -rf obj/*
+
+obj/parts.o: src/parts.c
+	@echo "compiling $< ..."
+	@$(CC) -c $< $(CLFAGS) -o $@
+
+obj/patcher.o: src/patcher.c
+	@echo "compiling $< ..."
+	@$(CC) -c $< $(CLFAGS) -o $@
+
+$(T_BUSBDL): obj/parts.o obj/patcher.o
+	@echo "generating $< ..."
+	@gcc $(CFLAGS) src/balong-usbdload.c $^ $(LFLAGS) -o $@
+
+$(T_PTINJR): obj/parts.o
+	@echo "generating $< ..."
+	@gcc $(CFLAGS) src/ptable-injector.c $^ $(LFLAGS) -o $@
+	
+$(T_LDRPAT): obj/patcher.o
+	@echo "generating $< ..."
+	@gcc $(CFLAGS) src/loader-patch.c $^ $(LFLAGS) -o $@
+
+$(T_PTBLST): obj/parts.o
+	@echo "generating $< ..."
+	@gcc $(CFLAGS) src/ptable-list.c $^ $(LFLAGS) -o $@
+	
