@@ -10,7 +10,7 @@
     #include <unistd.h>
 #else
     #include <windows.h>
-    #include "getopt.h"
+    #include <getopt.h>
 #endif
 
 #include "parts.h"

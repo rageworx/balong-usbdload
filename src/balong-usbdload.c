@@ -14,7 +14,7 @@
 #else
     #include <windows.h>
     #include <setupapi.h>
-    #include "getopt.h"
+    #include <getopt.h>
 #endif /// of !_WIN32
 
 #include "parts.h"
