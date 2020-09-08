@@ -265,9 +265,9 @@ static int find_port(int* port_no, char* port_name)
         ZeroMemory(&device_info_data, sizeof(SP_DEVINFO_DATA));
         device_info_data.cbSize = sizeof(SP_DEVINFO_DATA);
 
-        retB = SetupDiEnumDeviceInfoA( device_info_set, 
-                                       member_index, 
-                                       &device_info_data );
+        retB = SetupDiEnumDeviceInfo( device_info_set, 
+                                      member_index, 
+                                      &device_info_data );
         if ( retB == FALSE )
             break;
 
@@ -307,7 +307,7 @@ static int find_port(int* port_no, char* port_name)
         }
     }
 
-    SetupDiDestroyDeviceInfoListA(device_info_set);
+    SetupDiDestroyDeviceInfoList(device_info_set);
 
     return result;
 }

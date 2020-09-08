@@ -5,19 +5,15 @@
 #include <stdint.h>
 
 #ifndef WIN32
-//%%%%
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <unistd.h>
 #else
-//%%%%
-#include <windows.h>
-#include "getopt.h"
-#include "printf.h"
+    #include <windows.h>
+    #include "getopt.h"
 #endif
 
 #include "parts.h"
-
   
 //############################################################################################################3
 

@@ -5,7 +5,7 @@ CFLAGS += -I/usr/local/include
 LFLAGS += -O2 -g -Wno-unused-result
 LFLAGS += -mwindows
 LFLAGS += -L/usr/local/lib
-LFLAGS += -lsetupapi
+LFLAGS += -lsetupapi -lwsock32
 
 # Target config --
 TARGET_DIR = bin
