@@ -35,18 +35,18 @@ obj/patcher.o: src/patcher.c
 	@$(CC) -c $< $(CLFAGS) -o $@
 
 $(T_BUSBDL): obj/parts.o obj/patcher.o
-	@echo "generating $< ..."
+	@echo "generating $@ ..."
 	@gcc $(CFLAGS) src/balong-usbdload.c $^ $(LFLAGS) -o $@
 
 $(T_PTINJR): obj/parts.o
-	@echo "generating $< ..."
+	@echo "generating $@ ..."
 	@gcc $(CFLAGS) src/ptable-injector.c $^ $(LFLAGS) -o $@
 	
 $(T_LDRPAT): obj/patcher.o
-	@echo "generating $< ..."
+	@echo "generating $@ ..."
 	@gcc $(CFLAGS) src/loader-patch.c $^ $(LFLAGS) -o $@
 
 $(T_PTBLST): obj/parts.o
-	@echo "generating $< ..."
+	@echo "generating $@ ..."
 	@gcc $(CFLAGS) src/ptable-list.c $^ $(LFLAGS) -o $@
 	
